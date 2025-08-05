@@ -1,1 +1,0 @@
-C:\Cotemig\3Ano\POO\2etapa\GerenciamentoPedidos\wwwroot\sample-data\weather.json
