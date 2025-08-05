@@ -1,0 +1,63 @@
+@using GerenciamentoPedidos.Models
+@inject ClienteService ClienteSvc
+
+<EditForm Model="Pedido" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <!-- Cliente -->
+    <div class="mb-3">
+        <label class="form-label">Cliente</label>
+        <InputSelect TValue="int"
+                     @bind-Value="selectedClienteId"
+                     @bind-Value:event="onchange"
+                     class="form-select">
+            <option value="">-- selecione --</option>
+            @foreach (var c in clientes)
+            {
+                <option value="@c.Id">@c.Nome</option>
+            }
+        </InputSelect>
+        <ValidationMessage For="@(() => selectedClienteId)" />
+    </div>
+
+    <!-- Itens -->
+    <ListaItensPedido Itens="Pedido.Itens"
+                      OnAdd="OnAddItem"
+                      OnRemove="OnRemoveItem" />
+
+    <!-- Total -->
+    <p class="mt-3"><strong>Total:</strong> @Pedido.Total.ToString("C")</p>
+
+    <!-- Ações -->
+    <div class="d-flex gap-2 mt-3">
+        <button type="submit" class="btn btn-primary">Salvar</button>
+        <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancelar</button>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter] public Pedido Pedido { get; set; } = new();
+    [Parameter] public EventCallback OnCancel { get; set; }
+    [Parameter] public EventCallback<Pedido> OnSave { get; set; }
+
+    private List<Cliente> clientes = new();
+    private int selectedClienteId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        clientes = await ClienteSvc.ObterTodosClientes();
+        // se vier um pedido existente, garanta que selectedClienteId esteja correto
+        selectedClienteId = Pedido?.Cliente?.Id ?? 0;
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        Pedido.Cliente = clientes.First(c => c.Id == selectedClienteId);
+        await OnSave.InvokeAsync(Pedido);
+    }
+
+    private void OnAddItem(ItemPedido item) => Pedido.Itens.Add(item);
+    private void OnRemoveItem(ItemPedido item) => Pedido.Itens.Remove(item);
+    private Task Cancel() => OnCancel.InvokeAsync();
+}

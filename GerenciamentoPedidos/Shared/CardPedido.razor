@@ -1,0 +1,38 @@
+@using GerenciamentoPedidos.Models
+
+<div class="card mb-3">
+    <div class="card-body">
+        <h5 class="card-title">Pedido #@Pedido.Id</h5>
+        <p><strong>Cliente:</strong> @Pedido.Cliente.Nome</p>
+        <p><strong>Data:</strong> @Pedido.DataPedido.ToString("dd/MM/yyyy HH:mm")</p>
+        <p><strong>Total:</strong> @Pedido.Total.ToString("C")</p>
+        <p><strong>Status:</strong> @Pedido.Status</p>
+        <button class="btn btn-sm btn-info me-1" @onclick="() => OnEdit.InvokeAsync(Pedido.Id)">
+            Editar
+        </button>
+        <button class="btn btn-sm btn-danger" @onclick="() => OnRemove.InvokeAsync(Pedido.Id)">
+            Remover
+        </button>
+    </div>
+</div>
+
+@code {
+    [Parameter] public Pedido Pedido { get; set; } = new();
+    [Parameter] public EventCallback<int> OnEdit { get; set; }
+    [Parameter] public EventCallback<int> OnRemove { get; set; }
+
+    private int _lastHash;
+
+    protected override void OnParametersSet()
+    {
+        // calcula um hash simples baseado em Id, Total e Status
+        _lastHash = HashCode.Combine(Pedido.Id, Pedido.Total, Pedido.Status);
+    }
+
+    // Corrigido para protected (mesma visibilidade do base)
+    protected override bool ShouldRender()
+    {
+        var current = HashCode.Combine(Pedido.Id, Pedido.Total, Pedido.Status);
+        return current != _lastHash;
+    }
+}

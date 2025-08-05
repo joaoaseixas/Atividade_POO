@@ -1,0 +1,33 @@
+@inject IJSRuntime JS
+
+<div class="modal @(Show ? "show d-block" : "fade")" style="background: rgba(0,0,0,.5);">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">@Title</h5>
+                <button type="button" class="btn-close" @onclick="() => OnClose.InvokeAsync(false)"></button>
+            </div>
+            <div class="modal-body">
+                <p>@Message</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" @onclick="() => OnClose.InvokeAsync(false)">Cancelar</button>
+                <button class="btn btn-danger" @onclick="Confirm">Confirmar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public bool Show { get; set; }
+    [Parameter] public string Title { get; set; } = "Confirmar";
+    [Parameter] public string Message { get; set; } = "Tem certeza?";
+    [Parameter] public EventCallback<bool> OnClose { get; set; }
+    [Parameter] public EventCallback OnConfirm { get; set; }
+
+    void Confirm()
+    {
+        OnConfirm.InvokeAsync();
+        OnClose.InvokeAsync(false);
+    }
+}
